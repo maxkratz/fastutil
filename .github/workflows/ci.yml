@@ -1,0 +1,36 @@
+name: Build fastutil
+on:
+  push:
+    branches:
+      - main
+      - master
+      - 'testing/**'
+      - 'feature/**'
+      - 'hotfix/**'
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: [ubuntu-20.04]
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -yq gcc make ant openjdk-17-jdk
+      - name: Create sources
+        run: |
+          make sources
+      - name: Modify source code to fix broken comments
+        run: |
+          find . -name "*" -type f | xargs sed -i -e '/When minimum Java/d'
+      - name: Build jar
+        run: |
+          ant jar
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: fastutil.jar
+          path: fastutil-*.jar
